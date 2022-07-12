@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :ex_oauth2_provider, namespace: Dummy
 
@@ -13,6 +13,10 @@ config :ex_oauth2_provider, ExOauth2Provider,
   grant_flows: ~w(authorization_code client_credentials)
 
 config :ex_oauth2_provider, Dummy.Repo,
+  adapter: Ecto.Adapters.Postgres,
   database: "ex_oauth2_provider_test",
   pool: Ecto.Adapters.SQL.Sandbox,
-  priv: "test/support/priv"
+  priv: "test/support/priv",
+  username: "postgres",
+  password: "123456",
+  hostname: "localhost"
