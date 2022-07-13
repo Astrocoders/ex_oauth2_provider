@@ -29,14 +29,13 @@ defmodule ExOauth2Provider.Plug.VerifyHeader do
   @doc false
   @spec init(keyword()) :: keyword()
   def init(opts \\ []) do
-    opts
-    |> Keyword.get(:realm)
-    |> maybe_set_realm_option(opts)
+    opts |> Keyword.get(:realm) |> maybe_set_realm_option(opts)
   end
 
   defp maybe_set_realm_option(nil, opts), do: opts
+
   defp maybe_set_realm_option(realm, opts) do
-    realm              = Regex.escape(realm)
+    realm = Regex.escape(realm)
     {:ok, realm_regex} = Regex.compile("#{realm}\:?\s+(.*)$", "i")
 
     Keyword.put(opts, :realm_regex, realm_regex)
@@ -45,8 +44,12 @@ defmodule ExOauth2Provider.Plug.VerifyHeader do
   @doc false
   @spec call(Conn.t(), keyword()) :: Conn.t()
   def call(conn, opts) do
-    key    = Keyword.get(opts, :key, :default)
-    config = Keyword.take(opts, [:otp_app])
+    key = Keyword.get(opts, :key, :default)
+
+    config =
+      Keyword.take(opts, [
+        :otp_app
+      ])
 
     conn
     |> fetch_token(opts)
@@ -63,17 +66,19 @@ defmodule ExOauth2Provider.Plug.VerifyHeader do
 
   defp do_fetch_token(_realm_regex, []), do: nil
   defp do_fetch_token(nil, [token | _tail]), do: String.trim(token)
+
   defp do_fetch_token(realm_regex, [token | tail]) do
     trimmed_token = String.trim(token)
 
     case Regex.run(realm_regex, trimmed_token) do
       [_, match] -> String.trim(match)
-      _          -> do_fetch_token(realm_regex, tail)
+      _ -> do_fetch_token(realm_regex, tail)
     end
   end
 
   defp verify_token(nil, conn, _, _config), do: conn
   defp verify_token("", conn, _, _config), do: conn
+
   defp verify_token(token, conn, key, config) do
     access_token = ExOauth2Provider.authenticate_token(token, config)
 
